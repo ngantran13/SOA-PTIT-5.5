@@ -1,0 +1,51 @@
+server:
+  port: 8000
+spring:
+  application:
+    name: Gateway
+  cloud:
+    gateway:
+      routes:
+        - id: customer-service
+          uri: http://customer-service:8001
+          predicates:
+            - Path=/api/customers/**
+          filters:
+            - RewritePath=/api/customers(?<segment>.*), /api/customers/${segment}
+        - id: movie-service
+          uri: http://movie-service:8002
+          predicates:
+            - Path=/api/movies/**, /api/genres/**, /api/showtimes/**
+          filters:
+            - RewritePath=/api/movies(?<segment>.*), /api/movies/${segment}
+        - id: seat-service
+          uri: http://seat-service:8003
+          predicates:
+            - Path=/api/seats/**, /api/seat-status/**
+          filters:
+            - RewritePath=/api/seats(?<segment>.*), /api/seats/${segment}
+        - id: booking-ticket-service
+          uri: http://booking-ticket-service:8004
+          predicates:
+            - Path=/api/booking-tickets/**, /api/booking-seats/**
+          filters:
+            - RewritePath=/api/tickets(?<segment>.*), /api/tickets/${segment}
+        - id: payment-service
+          uri: http://payment-service:8005
+          predicates:
+            - Path=/api/payments/**
+        - id: notification-service
+          uri: http://notification-service:8006
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - RewritePath=/api/notifications(?<segment>.*), /api/notifications/${segment}
+logging:
+  level:
+    root: info
+    org:
+      springframework:
+        web: debug
+
+
+

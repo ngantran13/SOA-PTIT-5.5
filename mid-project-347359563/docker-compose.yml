@@ -1,0 +1,141 @@
+version: '3.8'
+services:
+  customer-service:
+    build:
+      context: ./services/customer-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    networks:
+      - microservice
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  movie-service:
+    build:
+      context: ./services/movie-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    networks:
+      - microservice
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  seat-service:
+    build:
+      context: ./services/seat-service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    networks:
+      - microservice
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      
+
+  booking-ticket-service:
+    build:
+      context: ./services/booking-ticket-service
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    networks:
+      - microservice
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    networks:
+      - microservice
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8006:8006"
+    networks:
+      - microservice
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - microservice
+
+  front-service:
+    build:
+      context: ./frontend/booking-ticket-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - microservice
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - microservice
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    networks:
+      - microservice
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    
+
+networks:
+  microservice:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local

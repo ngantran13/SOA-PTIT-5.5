@@ -1,0 +1,486 @@
+openapi: 3.0.3
+info:
+  title: Seat Service API
+  version: 1.0.0
+  description: API quản lý ghế ngồi trong hệ thống đặt vé xem phim
+
+tags:
+  - name: Seats
+    description: Quản lý thông tin ghế
+  - name: SeatStatus
+    description: Quản lý trạng thái ghế ngồi theo suất chiếu
+paths:
+  /api/seats/:
+    get:
+      tags: [Seats]
+      summary: Lấy danh sách ghế
+      parameters:
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            maximum: 100
+            default: 100
+      responses:
+        '200':
+          description: Danh sách ghế
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Seat'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    post:
+      tags: [Seats]
+      summary: Tạo mới một ghế
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatCreate'
+      responses:
+        '201':
+          description: Ghế được tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Seat'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/seats/{seat_id}:
+    get:
+      tags: [Seats]
+      summary: Lấy thông tin một ghế cụ thể
+      parameters:
+        - in: path
+          name: seat_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thông tin ghế
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Seat'
+        '404':
+          description: Seat not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags: [Seats]
+      summary: Cập nhật thông tin ghế
+      parameters:
+        - in: path
+          name: seat_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatUpdate'
+      responses:
+        '200':
+          description: Ghế đã được cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Seat'
+        '404':
+          description: Seat not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags: [Seats]
+      summary: Xóa một ghế
+      parameters:
+        - in: path
+          name: seat_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+        '404':
+          description: Seat not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+          
+  /api/seat-status/:
+    get:
+      tags: [SeatStatus]
+      summary: Lấy danh sách trạng thái ghế
+      parameters:
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            maximum: 100
+            default: 100
+      responses:
+        '200':
+          description: Danh sách trạng thái ghế
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [SeatStatus]
+      summary: Tạo trạng thái ghế mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatStatusCreate'
+      responses:
+        '201':
+          description: Trạng thái ghế được tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatStatus'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/seat-status/{seat_status_id}:
+    get:
+      tags: [SeatStatus]
+      summary: Lấy thông tin trạng thái ghế cụ thể
+      parameters:
+        - in: path
+          name: seat_status_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thông tin trạng thái ghế
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatStatus'
+        '404':
+          description: Seat status not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags: [SeatStatus]
+      summary: Cập nhật trạng thái ghế
+      parameters:
+        - in: path
+          name: seat_status_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatStatusUpdate'
+      responses:
+        '200':
+          description: Trạng thái ghế đã được cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatStatus'
+        '404':
+          description: Seat status not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags: [SeatStatus]
+      summary: Xóa trạng thái ghế
+      parameters:
+        - in: path
+          name: seat_status_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+        '404':
+          description: Seat status not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/seat-status/{seat_status_id}/reserve:
+    put:
+      tags: [SeatStatus]
+      summary: Giữ chỗ ghế xem phim
+      parameters:
+        - in: path
+          name: seat_status_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatStatusReverse'
+      responses:
+        '200':
+          description: Ghế đã được giữ chỗ thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatStatus'
+        '404':
+          description: Seat status not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/seat-status/{seat_status_id}/cancel:
+    put:
+      tags: [SeatStatus]
+      summary: Hủy giữ chỗ ghế
+      parameters:
+        - in: path
+          name: seat_status_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ghế đã được đặt lại trạng thái available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatStatus'
+        '404':
+          description: Seat status not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/seats/booking/{booking_ticket_id}:
+    get:
+      tags:
+        - seats
+      summary: Lấy danh sách ghế theo booking_ticket_id
+      parameters:
+        - in: path
+          name: booking_ticket_id
+          required: true
+          schema:
+            type: integer
+          description: ID của vé đặt chỗ để truy xuất các ghế liên quan
+      responses:
+        '200':
+          description: Danh sách ghế được tìm thấy
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Seat'
+        '404':
+          description: Không tìm thấy ghế cho mã vé đặt chỗ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: No seats found for booking ticket ID 123
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/seats/showtime/{showtime_id}:
+    get:
+      tags:
+        - seats
+      summary: Lấy danh sách trạng thái ghế theo suất chiếu
+      parameters:
+        - in: path
+          name: showtime_id
+          required: true
+          schema:
+            type: integer
+          description: ID của suất chiếu để truy xuất trạng thái ghế
+      responses:
+        '200':
+          description: Danh sách trạng thái ghế theo suất chiếu được tìm thấy
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatStatus'
+        '404':
+          description: Không tìm thấy trạng thái ghế cho suất chiếu này
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Seat statuses not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    SeatType:
+      type: string
+      enum: [normal, vip, premium]
+
+    Seat:
+      type: object
+      properties:
+        seat_id:
+          type: integer
+        seat_name:
+          type: string
+        seat_type:
+          $ref: '#/components/schemas/SeatType'
+        price:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SeatCreate:
+      type: object
+      required: [seat_name, seat_type, price]
+      properties:
+        seat_name:
+          type: string
+        seat_type:
+          $ref: '#/components/schemas/SeatType'
+        price:
+          type: number
+          format: float
+
+    SeatUpdate:
+      type: object
+      properties:
+        seat_name:
+          type: string
+        seat_type:
+          $ref: '#/components/schemas/SeatType'
+        price:
+          type: number
+          format: float
+    
+    SeatStatusType:
+      type: string
+      enum: [available, reserved, booked]
+
+    SeatStatus:
+      type: object
+      properties:
+        seat_status_id:
+          type: integer
+        seat_id:
+          type: integer
+        showtime_id:
+          type: integer
+        customer_id:
+          type: integer
+          nullable: true
+        booking_ticket_id:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/SeatStatusType'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SeatStatusCreate:
+      type: object
+      required: [seat_id, showtime_id, status]
+      properties:
+        seat_id:
+          type: integer
+        showtime_id:
+          type: integer
+        customer_id:
+          type: integer
+          nullable: true
+        booking_ticket_id:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/SeatStatusType'
+
+    SeatStatusUpdate:
+      type: object
+      properties:
+        seat_id:
+          type: integer
+        showtime_id:
+          type: integer
+        customer_id:
+          type: integer
+          nullable: true
+        booking_ticket_id:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/SeatStatusType'
+
+    SeatStatusReverse:
+      type: object
+      required: [customer_id, booking_ticket_id]
+      properties:
+        customer_id:
+          type: integer
+        status:
+          $ref: '#/components/schemas/SeatStatusType'
+          default: reserved
+        booking_ticket_id:
+          type: integer
+
+  responses:
+    NotFound:
+      description: Not found
+    ServerError:
+      description: Internal server error

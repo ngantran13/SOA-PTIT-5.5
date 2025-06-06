@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: Payment Service API
+  version: "1.0.0"
+  description: API xử lý thanh toán vé, tích hợp VNPAY
+
+paths:
+  /api/payments:
+    get:
+      tags: [Payments]
+      summary: Lấy danh sách thanh toán
+      parameters:
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Danh sách thanh toán
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+
+    post:
+      tags: [Payments]
+      summary: Tạo thanh toán mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreate'
+      responses:
+        '200':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+  /api/payments/{payment_id}:
+    get:
+      tags: [Payments]
+      summary: Lấy thanh toán theo ID
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết thanh toán
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+
+    put:
+      tags: [Payments]
+      summary: Cập nhật thanh toán
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentUpdate'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+
+    delete:
+      tags: [Payments]
+      summary: Xoá thanh toán
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xoá thành công
+        '404':
+          description: Payment not found
+
+  /api/payments/pay/place:
+    get:
+      tags: [Payments]
+      summary: Tạo URL thanh toán VNPAY và redirect
+      parameters:
+        - name: booking_ticket_id
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: customer_id
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: full_name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '302':
+          description: Redirect đến trang thanh toán VNPAY
+
+  /api/payments/pay/payment_return:
+    get:
+      tags: [Payments]
+      summary: Xử lý callback từ VNPAY
+      responses:
+        '302':
+          description: Redirect về giao diện người dùng
+        '400':
+          description: Checksum không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Checksum không hợp lệ
+
+components:
+  schemas:
+    PaymentStatus:
+      type: string
+      enum: [pending, completed, failed]
+
+    PaymentMethod:
+      type: string
+      enum: [vnpay, cod]
+
+    PaymentCreate:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+        booking_ticket_id:
+          type: integer
+        customer_id:
+          type: integer
+        full_name:
+          type: string
+        email:
+          type: string
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod'
+        payment_time:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatus'
+      required:
+        - transaction_id
+        - booking_ticket_id
+        - customer_id
+        - payment_method
+        - amount
+
+    PaymentUpdate:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+        booking_ticket_id:
+          type: integer
+        customer_id:
+          type: integer
+        full_name:
+          type: string
+        email:
+          type: string
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod'
+        payment_time:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatus'
+
+    Payment:
+      allOf:
+        - $ref: '#/components/schemas/PaymentCreate'
+        - type: object
+          properties:
+            payment_id:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time

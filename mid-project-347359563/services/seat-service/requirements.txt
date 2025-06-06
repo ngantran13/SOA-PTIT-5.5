@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+aio-pika
+pika
+pymysql
+sqlalchemy
+python-dotenv
+pydantic
+requests
+cryptography

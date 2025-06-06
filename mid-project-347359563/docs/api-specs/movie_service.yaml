@@ -1,0 +1,532 @@
+openapi: 3.0.3
+info:
+  title: Movie Service API
+  version: "1.0.0"
+  description: Quản lý phim và suất chiếu
+tags:
+  - name: genres
+    description: Quản lý thể loại phim
+  - name: movies
+    description: Quản lý thông tin phim
+  - name: showtimes
+    description: Quản lý suất chiếu phim
+paths:  
+  /api/genres:
+    get:
+      tags:
+        - genres
+      summary: Lấy danh sách thể loại phim
+      parameters:
+        - name: skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Danh sách thể loại phim
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Genre'
+
+    post:
+      tags:
+        - genres
+      summary: Tạo thể loại phim mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenreCreate'
+      responses:
+        '201':
+          description: Tạo thành công thể loại phim
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '400':
+          description: Thể loại đã tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Genre already exists
+
+  /api/genres/{genre_id}:
+    get:
+      tags:
+        - genres
+      summary: Lấy thông tin thể loại phim theo ID
+      parameters:
+        - name: genre_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thể loại phim tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '404':
+          description: Không tìm thấy thể loại phim
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Genre not found
+
+    put:
+      tags:
+        - genres
+      summary: Cập nhật tên thể loại phim theo ID
+      parameters:
+        - name: genre_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenreCreate'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '404':
+          description: Không tìm thấy thể loại phim
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Genre not found
+
+    delete:
+      tags:
+        - genres
+      summary: Xóa thể loại phim theo ID
+      parameters:
+        - name: genre_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công, không có nội dung trả về
+        '404':
+          description: Không tìm thấy thể loại phim
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Genre not found
+
+  /api/movies:
+    get:
+      tags: [movies]
+      summary: Lấy danh sách phim
+      parameters:
+        - name: skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Danh sách phim
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+
+    post:
+      tags: [movies]
+      summary: Tạo phim mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieCreate'
+      responses:
+        '201':
+          description: Tạo phim thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '404':
+          description: Genres not found
+        '400':
+          description: One or more genres not found
+
+  /api/movies/{movie_id}:
+    get:
+      tags: [movies]
+      summary: Lấy phim theo ID
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thông tin phim
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '404':
+          description: Movie not found
+
+    put:
+      tags: [movies]
+      summary: Cập nhật phim
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieUpdate'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '404':
+          description: Movie not found/Genres not found
+        '400':
+          description: One or more genres not found
+
+    delete:
+      tags: [movies]
+      summary: Xoá phim
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xoá thành công
+        '404':
+          description: Movie not found
+
+  /api/showtimes:
+    get:
+      tags: [showtimes]
+      summary: Lấy danh sách suất chiếu
+      parameters:
+        - name: skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Danh sách suất chiếu
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Showtime'
+
+    post:
+      tags: [showtimes]
+      summary: Tạo suất chiếu mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowtimeCreate'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Showtime'
+        '404':
+          description: Movie not found
+
+  /api/showtimes/{showtime_id}:
+    get:
+      tags: [showtimes]
+      summary: Lấy suất chiếu theo ID
+      parameters:
+        - name: showtime_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thông tin suất chiếu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Showtime'
+        '404':
+          description: Showtime not found
+
+    put:
+      tags: [showtimes]
+      summary: Cập nhật suất chiếu
+      parameters:
+        - name: showtime_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowtimeUpdate'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Showtime'
+        '404':
+          description: Showtime not found/Movie not found
+
+    delete:
+      tags: [showtimes]
+      summary: Xoá suất chiếu
+      parameters:
+        - name: showtime_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xoá thành công
+        '404':
+          description: Showtime not found
+
+  /api/showtimes/movie/{movie_id}:
+    get:
+      tags: [showtimes]
+      summary: Lấy danh sách suất chiếu theo phim
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Danh sách suất chiếu theo phim
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShowtimeOnly'
+        '404':
+          description: Showtimes not found
+
+components:
+  schemas:
+    Genre:
+      type: object
+      properties:
+        genre_id:
+          type: integer
+        name:
+          type: string
+
+    Movie:
+      type: object
+      properties:
+        movie_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        release_date:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+        rating:
+          type: number
+          format: float
+        poster_url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+
+    MovieCreate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        release_date:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+        rating:
+          type: number
+        poster_url:
+          type: string
+          format: uri
+        genres:
+          type: array
+          items:
+            type: integer
+
+    MovieUpdate:
+      allOf:
+        - $ref: '#/components/schemas/MovieCreate'
+
+    Showtime:
+      type: object
+      properties:
+        showtime_id:
+          type: integer
+        name:
+          type: string
+        theater:
+          type: string
+        starttime:
+          type: string
+          format: date-time
+        endtime:
+          type: string
+          format: date-time
+        price:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        movie:
+          $ref: '#/components/schemas/Movie'
+
+    ShowtimeCreate:
+      type: object
+      properties:
+        movie_id:
+          type: integer
+        name:
+          type: string
+        theater:
+          type: string
+        starttime:
+          type: string
+          format: date-time
+        endtime:
+          type: string
+          format: date-time
+        price:
+          type: number
+
+    ShowtimeUpdate:
+      allOf:
+        - $ref: '#/components/schemas/ShowtimeCreate'
+
+    ShowtimeOnly:
+      type: object
+      properties:
+        showtime_id:
+          type: integer
+        name:
+          type: string
+        theater:
+          type: string
+        starttime:
+          type: string
+          format: date-time
+        endtime:
+          type: string
+          format: date-time
+        price:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

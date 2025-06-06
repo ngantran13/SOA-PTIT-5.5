@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Notification Service API
+  version: "1.0.0"
+  description: API gửi và quản lý thông báo liên quan đến đặt vé
+
+paths:
+  /api/notifications:
+    get:
+      tags: [Notifications]
+      summary: Lấy danh sách thông báo
+      parameters:
+        - name: skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Danh sách thông báo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+
+    post:
+      tags: [Notifications]
+      summary: Tạo thông báo mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationCreate'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+
+  /api/notifications/{notification_id}:
+    get:
+      tags: [Notifications]
+      summary: Lấy thông báo theo ID
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thông báo được tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '404':
+          description: Không tìm thấy thông báo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Notification not found
+
+    put:
+      tags: [Notifications]
+      summary: Cập nhật thông báo
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationUpdate'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '404':
+          description: Notification not found
+
+    delete:
+      tags: [Notifications]
+      summary: Xoá thông báo
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xoá thành công, không có nội dung
+        '404':
+          description: Notification not found
+
+components:
+  schemas:
+    NotificationType:
+      type: string
+      enum: [info, warning, error, success, fail]
+      example: info
+
+    NotificationCreate:
+      type: object
+      properties:
+        customer_id:
+          type: integer
+        booking_id:
+          type: integer
+        notification_type:
+          $ref: '#/components/schemas/NotificationType'
+        subject:
+          type: string
+        message:
+          type: string
+        details:
+          type: string
+      required:
+        - customer_id
+        - booking_id
+        - subject
+        - message
+
+    NotificationUpdate:
+      type: object
+      properties:
+        notification_id:
+          type: integer
+        customer_id:
+          type: integer
+        booking_id:
+          type: integer
+        notification_type:
+          $ref: '#/components/schemas/NotificationType'
+        subject:
+          type: string
+        message:
+          type: string
+        details:
+          type: string
+
+    Notification:
+      allOf:
+        - $ref: '#/components/schemas/NotificationCreate'
+        - type: object
+          properties:
+            notification_id:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time

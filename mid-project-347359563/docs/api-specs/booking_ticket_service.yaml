@@ -1,0 +1,333 @@
+openapi: 3.0.3
+info:
+  title: Booking Service API
+  version: "1.0.0"
+  description: API quản lý đặt vé
+
+paths:
+  /api/booking-tickets:
+    get:
+      tags: [Booking Tickets]
+      summary: Lấy danh sách vé 
+      parameters:
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Danh sách vé 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingTicket'
+
+    post:
+      tags: [Booking Tickets]
+      summary: Tạo vé mới (gửi message RabbitMQ để giữ ghế)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingTicketCreate'
+      responses:
+        '200':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingTicket'
+
+  /api/booking-tickets/{booking_ticket_id}:
+    get:
+      tags: [Booking Tickets]
+      summary: Lấy vé theo ID
+      parameters:
+        - name: booking_ticket_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thông tin vé đặt chỗ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingTicket'
+        '404':
+          description: Booking ticket not found
+
+    put:
+      tags: [Booking Tickets]
+      summary: Cập nhật vé đặt chỗ
+      parameters:
+        - name: booking_ticket_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingTicketUpdate'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingTicket'
+        '404':
+          description: Booking ticket not found
+
+    delete:
+      tags: [Booking Tickets]
+      summary: Xoá vé đặt chỗ
+      parameters:
+        - name: booking_ticket_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xoá thành công
+        '404':
+          description: Booking ticket not found
+
+  /api/booking-tickets/customer/{customer_id}:
+    get:
+      tags: [Booking Tickets]
+      summary: Lấy vé đặt chỗ theo ID khách hàng
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Danh sách vé đặt chỗ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingTicket'
+        '404':
+          description: Booking ticket not found
+
+  /api/booking-seats:
+    get:
+      tags: [Booking Seats]
+      summary: Lấy danh sách ghế đã đặt
+      parameters:
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Danh sách ghế đã đặt
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingSeat'
+
+    post:
+      tags: [Booking Seats]
+      summary: Tạo mới ghế đặt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingSeatCreate'
+      responses:
+        '200':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingSeat'
+
+  /api/booking-seats/{booking_seat_id}:
+    get:
+      tags: [Booking Seats]
+      summary: Lấy thông tin ghế đã đặt theo ID booking_seat_id
+      parameters:
+        - name: booking_seat_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thông tin ghế đã đặt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingSeat'
+        '404':
+          description: Booking seat not found
+
+    put:
+      tags: [Booking Seats]
+      summary: Cập nhật thông tin ghế đã đặt
+      parameters:
+        - name: booking_seat_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingSeatUpdate'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingSeat'
+        '404':
+          description: Booking seat not found
+
+    delete:
+      tags: [Booking Seats]
+      summary: Xoá ghế đã đặt
+      parameters:
+        - name: booking_seat_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xoá thành công
+        '404':
+          description: Booking seat not found
+
+components:
+  schemas:
+    BookingStatus:
+      type: string
+      enum: [pending, canceled, completed]
+
+    BookingTicketCreate:
+      type: object
+      properties:
+        customer_id:
+          type: integer
+        showtime_id:
+          type: integer
+        total_amount:
+          type: number
+        seat_status_ids:
+          type: array
+          items:
+            type: integer
+      required:
+        - customer_id
+        - showtime_id
+        - total_amount
+        - seat_status_ids
+
+    BookingTicketUpdate:
+      type: object
+      properties:
+        customer_id:
+          type: integer
+        showtime_id:
+          type: integer
+        booking_date:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        total_amount:
+          type: number
+        payment_id:
+          type: integer
+
+    BookingTicket:
+      type: object
+      properties:
+        booking_ticket_id:
+          type: integer
+        customer_id:
+          type: integer
+        showtime_id:
+          type: integer
+        booking_date:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        total_amount:
+          type: number
+        payment_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BookingSeatCreate:
+      type: object
+      properties:
+        booking_ticket_id:
+          type: integer
+        seat_status_id:
+          type:
+
+    BookingSeatUpdate:
+      type: object
+      properties:
+        booking_ticket_id:
+          type: integer
+        seat_status_id:
+          type: integer
+
+    BookingSeat:
+      type: object
+      properties:
+        booking_seat_id:
+          type: integer
+        booking_ticket_id:
+          type: integer
+        seat_status_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        booking_ticket:
+          $ref: '#/components/schemas/BookingTicket'
